@@ -1,6 +1,16 @@
-import { defineDb } from 'astro:db';
+import { defineDb } from "astro:db";
+import {
+  DictionaryEntries,
+  EntryVariants,
+  UserWordNotes,
+  LookupHistory,
+} from "./tables";
 
-// https://astro.build/db/config
 export default defineDb({
-  tables: {}
+  tables: {
+    DictionaryEntries,
+    EntryVariants,
+    UserWordNotes,
+    LookupHistory,
+  },
 });
