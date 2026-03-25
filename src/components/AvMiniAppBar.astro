@@ -1,0 +1,27 @@
+---
+interface Props {
+  appName: string;
+  appKey: string;
+  logoPath?: string;
+}
+
+const { appName, appKey, logoPath = "/favicon.svg" } = Astro.props;
+const rootAppUrl = Astro.locals.rootAppUrl ?? "https://ansiversa.com";
+---
+
+<header class="sticky top-0 z-40 border-b border-slate-800 bg-slate-950/95 backdrop-blur">
+  <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+    <a href="/" class="flex items-center gap-3 text-slate-100">
+      <img src={logoPath} alt={`${appName} logo`} class="h-8 w-8 rounded-md border border-slate-700 p-1" />
+      <div>
+        <p class="text-sm font-semibold tracking-wide">{appName}</p>
+        <p class="text-xs text-slate-400">{appKey}</p>
+      </div>
+    </a>
+
+    <div class="flex items-center gap-2 text-xs sm:text-sm">
+      <a href={rootAppUrl} class="rounded-lg border border-slate-700 px-3 py-1.5 text-slate-300 hover:text-white">Ansiversa</a>
+      <a href="/app" class="rounded-lg bg-indigo-500 px-3 py-1.5 font-medium text-white hover:bg-indigo-400">Workspace</a>
+    </div>
+  </div>
+</header>

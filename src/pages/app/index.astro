@@ -1,0 +1,180 @@
+---
+import AppShell from "../../layouts/AppShell.astro";
+import AvMiniAppBar from "../../components/AvMiniAppBar.astro";
+import { server, listDictionaryEntries } from "../../actions";
+
+const user = Astro.locals.user;
+if (!user) return Astro.redirect("/");
+
+const formData = Astro.request.method === "POST" ? await Astro.request.formData() : null;
+let flash: { type: "success" | "error"; message: string } | null = null;
+
+async function runIntent() {
+  if (!formData) return;
+  const intent = String(formData.get("intent") ?? "");
+
+  try {
+    if (intent === "create") {
+      await Astro.callAction(server.createDictionaryEntry, {
+        term: String(formData.get("term") ?? ""),
+        phonetic: String(formData.get("phonetic") ?? "") || undefined,
+        partOfSpeech: String(formData.get("partOfSpeech") ?? "") || undefined,
+        definition: String(formData.get("definition") ?? ""),
+        exampleText: String(formData.get("exampleText") ?? "") || undefined,
+        category: String(formData.get("category") ?? "") || undefined,
+        notes: String(formData.get("notes") ?? "") || undefined,
+      });
+      flash = { type: "success", message: "Entry created." };
+    }
+
+    if (intent === "update") {
+      await Astro.callAction(server.updateDictionaryEntry, {
+        id: Number(formData.get("id")),
+        term: String(formData.get("term") ?? ""),
+        phonetic: String(formData.get("phonetic") ?? "") || undefined,
+        partOfSpeech: String(formData.get("partOfSpeech") ?? "") || undefined,
+        definition: String(formData.get("definition") ?? ""),
+        exampleText: String(formData.get("exampleText") ?? "") || undefined,
+        category: String(formData.get("category") ?? "") || undefined,
+        notes: String(formData.get("notes") ?? "") || undefined,
+      });
+      flash = { type: "success", message: "Entry updated." };
+    }
+
+    if (intent === "favorite") {
+      await Astro.callAction(server.toggleDictionaryEntryFavorite, {
+        id: Number(formData.get("id")),
+      });
+      flash = { type: "success", message: "Favorite updated." };
+    }
+
+    if (intent === "archive") {
+      await Astro.callAction(server.archiveDictionaryEntry, {
+        id: Number(formData.get("id")),
+      });
+      flash = { type: "success", message: "Entry archived." };
+    }
+
+    if (intent === "restore") {
+      await Astro.callAction(server.restoreDictionaryEntry, {
+        id: Number(formData.get("id")),
+      });
+      flash = { type: "success", message: "Entry restored." };
+    }
+  } catch (error) {
+    flash = {
+      type: "error",
+      message: error instanceof Error ? error.message : "Unable to complete request.",
+    };
+  }
+}
+
+await runIntent();
+
+const entries = await listDictionaryEntries(user.id);
+const activeEntries = entries.filter((entry) => entry.status === "active");
+const archivedEntries = entries.filter((entry) => entry.status === "archived");
+const favoriteEntries = activeEntries.filter((entry) => entry.isFavorite);
+const recentCutoff = new Date(Date.now() - 1000 * 60 * 60 * 24 * 7);
+const recentlyUpdated = entries.filter((entry) => new Date(entry.updatedAt) >= recentCutoff);
+const categories = [...new Set(entries.map((entry) => entry.category?.trim()).filter(Boolean))];
+---
+
+<AppShell title="Dictionary+ Workspace">
+  <AvMiniAppBar appName="Dictionary+" appKey="dictionary-plus" />
+
+  <main x-data class="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8" x-init={`$store.dictionaryPlus.init(${JSON.stringify(entries)})`}>
+    <section class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <article class="rounded-2xl border border-slate-800 bg-slate-900 p-4"><p class="text-xs text-slate-400">Total</p><p class="mt-2 text-2xl font-semibold text-white">{entries.length}</p></article>
+      <article class="rounded-2xl border border-slate-800 bg-slate-900 p-4"><p class="text-xs text-slate-400">Active</p><p class="mt-2 text-2xl font-semibold text-white">{activeEntries.length}</p></article>
+      <article class="rounded-2xl border border-slate-800 bg-slate-900 p-4"><p class="text-xs text-slate-400">Favorites</p><p class="mt-2 text-2xl font-semibold text-white">{favoriteEntries.length}</p></article>
+      <article class="rounded-2xl border border-slate-800 bg-slate-900 p-4"><p class="text-xs text-slate-400">Archived</p><p class="mt-2 text-2xl font-semibold text-white">{archivedEntries.length}</p></article>
+      <article class="rounded-2xl border border-slate-800 bg-slate-900 p-4"><p class="text-xs text-slate-400">Updated (7d)</p><p class="mt-2 text-2xl font-semibold text-white">{recentlyUpdated.length}</p></article>
+      <article class="rounded-2xl border border-slate-800 bg-slate-900 p-4"><p class="text-xs text-slate-400">Categories</p><p class="mt-2 text-2xl font-semibold text-white">{categories.length}</p></article>
+    </section>
+
+    {flash && (
+      <p class={`mt-5 rounded-xl border px-4 py-3 text-sm ${flash.type === "success" ? "border-emerald-800 bg-emerald-950 text-emerald-200" : "border-rose-800 bg-rose-950 text-rose-200"}`}>
+        {flash.message}
+      </p>
+    )}
+
+    <section class="mt-6 rounded-2xl border border-slate-800 bg-slate-900 p-4 sm:p-5">
+      <div class="flex flex-wrap items-center gap-3">
+        {[
+          ["overview", "Overview"],
+          ["entries", "Entries"],
+          ["favorites", "Favorites"],
+          ["archived", "Archived"],
+        ].map(([value, label]) => (
+          <button type="button" class="rounded-lg border border-slate-700 px-3 py-1.5 text-sm text-slate-200" @click={`$store.dictionaryPlus.setTab('${value}')`}>{label}</button>
+        ))}
+
+        <input type="search" placeholder="Search term, definition, or notes" class="ml-auto w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white sm:w-72" @input="$store.dictionaryPlus.setSearch($event.target.value)" />
+
+        <select class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white" @change="$store.dictionaryPlus.setCategory($event.target.value)">
+          <option value="all">All categories</option>
+          {categories.map((category) => <option value={category!}>{category}</option>)}
+        </select>
+      </div>
+
+      <div class="mt-4 overflow-hidden rounded-xl border border-slate-800">
+        <template x-if="$store.dictionaryPlus.filteredEntries.length === 0">
+          <div class="bg-slate-950 px-4 py-10 text-center text-slate-400">No entries match your current filters.</div>
+        </template>
+
+        <ul class="divide-y divide-slate-800">
+          <template x-for="entry in $store.dictionaryPlus.filteredEntries" :key="entry.id">
+            <li class="bg-slate-950/70 px-4 py-4">
+              <div class="flex flex-wrap items-start justify-between gap-2">
+                <div>
+                  <a :href="`/app/entries/${entry.id}`" class="text-lg font-semibold text-white hover:text-indigo-300" x-text="entry.term"></a>
+                  <p class="text-sm text-slate-400"><span x-text="entry.partOfSpeech || '—'"></span> · <span x-text="entry.category || 'Uncategorized'"></span></p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                  <form method="POST"><input type="hidden" name="intent" value="favorite" /><input type="hidden" name="id" :value="entry.id" /><button class="rounded-md border border-slate-700 px-2.5 py-1 text-xs text-slate-200" x-text="entry.isFavorite ? '★ Favorite' : '☆ Favorite'"></button></form>
+                  <a :href="`/app/entries/${entry.id}`" class="rounded-md border border-slate-700 px-2.5 py-1 text-xs text-slate-200">Open</a>
+                </div>
+              </div>
+              <p class="mt-2 line-clamp-2 text-sm text-slate-300" x-text="entry.definition"></p>
+            </li>
+          </template>
+        </ul>
+      </div>
+    </section>
+
+    <section class="mt-6 grid gap-6 lg:grid-cols-2">
+      <form method="POST" class="rounded-2xl border border-slate-800 bg-slate-900 p-5">
+        <input type="hidden" name="intent" value="create" />
+        <h2 class="text-lg font-semibold text-white">Create entry</h2>
+        <div class="mt-4 grid gap-3">
+          <input required name="term" placeholder="Term" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white" />
+          <input name="phonetic" placeholder="Phonetic (optional)" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white" />
+          <select name="partOfSpeech" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white"><option value="">Part of speech</option><option>noun</option><option>verb</option><option>adjective</option><option>adverb</option><option>phrase</option><option>other</option></select>
+          <input required name="definition" placeholder="Definition" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white" />
+          <input name="exampleText" placeholder="Usage example" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white" />
+          <input name="category" placeholder="Category / topic" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white" />
+          <textarea name="notes" rows="3" placeholder="Notes" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white"></textarea>
+          <button class="rounded-lg bg-indigo-500 px-4 py-2 text-sm font-medium text-white">Save entry</button>
+        </div>
+      </form>
+
+      <form method="POST" class="rounded-2xl border border-slate-800 bg-slate-900 p-5">
+        <input type="hidden" name="intent" value="update" />
+        <h2 class="text-lg font-semibold text-white">Quick edit by ID</h2>
+        <p class="mt-1 text-xs text-slate-400">Use for fast inline updates. Full context is available on the detail page.</p>
+        <div class="mt-4 grid gap-3">
+          <input required type="number" name="id" placeholder="Entry ID" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white" />
+          <input required name="term" placeholder="Term" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white" />
+          <select name="partOfSpeech" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white"><option value="">Part of speech</option><option>noun</option><option>verb</option><option>adjective</option><option>adverb</option><option>phrase</option><option>other</option></select>
+          <input required name="definition" placeholder="Definition" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white" />
+          <input name="phonetic" placeholder="Phonetic" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white" />
+          <input name="exampleText" placeholder="Usage example" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white" />
+          <input name="category" placeholder="Category" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white" />
+          <textarea name="notes" rows="3" placeholder="Notes" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white"></textarea>
+          <button class="rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium text-slate-900">Update entry</button>
+        </div>
+      </form>
+    </section>
+  </main>
+</AppShell>

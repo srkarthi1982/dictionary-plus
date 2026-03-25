@@ -26,5 +26,6 @@ MANDATORY: After completing each task, update this repo’s AGENTS.md Task Log (
 
 ## Task Log (Recent)
 - Keep newest first; include date and short summary.
+- 2026-03-25 Implemented Dictionary+ V1 end-to-end (Astro DB schema, ownership-safe actions, Alpine global store, public landing + protected workspace/detail routes, dashboard/notification hooks, middleware scope fix). Validation: build passed; typecheck blocked by restricted package install for @astrojs/check.
 - 2026-02-09 Added repo-level AGENTS.md enforcement contract (workspace reference + mandatory task-log update rule).
 - 2026-02-09 Initialized repo AGENTS baseline for single-repo Codex/AI safety.

@@ -1,93 +1,39 @@
 ---
 import AppShell from "../layouts/AppShell.astro";
-import { AvContainer, AvButton } from "@ansiversa/components";
+import AvMiniAppBar from "../components/AvMiniAppBar.astro";
 
-const title = "Dictionary+ – Ansiversa";
-const description = "Instant definitions with phonetics.";
+const title = "Dictionary+ | Personal Dictionary Workspace";
+const description = "Build and organize your personal dictionary with premium clarity inside Ansiversa.";
 ---
 
 <AppShell title={title} description={description}>
-  <!-- Hero -->
-  <section class="av-hero">
-    <AvContainer size="narrow" className="av-hero__content--narrow">
-      <div class="av-hero__content">
-        <div class="av-kicker">
-          <span>Learning · Ansiversa Mini App</span>
-        </div>
-        <h1 class="av-gradient-text">Dictionary+</h1>
-        <p>
-          Instant definitions with phonetics.
-        </p>
-      </div>
-      <div class="av-cta-row">
-        <AvButton href="https://dictionary-plus.ansiversa.com">Launch Dictionary+</AvButton>
-      </div>
-    </AvContainer>
-  </section>
+  <AvMiniAppBar appName="Dictionary+" appKey="dictionary-plus" />
 
-  <!-- Problem -->
-  <section class="av-section">
-    <AvContainer size="narrow">
-      <div class="av-section-header">
-        <h2 class="av-section-title">The problem it solves</h2>
-        <p class="av-section-lead">
-          Learning tools are scattered across tabs, apps, and messy notes.
-        </p>
+  <main class="mx-auto max-w-5xl px-4 py-14 sm:px-6 lg:px-8">
+    <section class="rounded-3xl border border-slate-800 bg-gradient-to-b from-slate-900 to-slate-950 p-8 sm:p-12">
+      <p class="text-sm uppercase tracking-[0.16em] text-indigo-300">Ansiversa Mini App</p>
+      <h1 class="mt-4 text-4xl font-semibold tracking-tight text-white sm:text-5xl">Your private dictionary, designed for deep learning.</h1>
+      <p class="mt-5 max-w-3xl text-lg leading-relaxed text-slate-300">
+        Dictionary+ helps you capture terms, definitions, examples, and notes in one polished workspace. Organize by category, mark favorites, and archive entries while keeping your study history intact.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-3">
+        <a href="/app" class="rounded-xl bg-indigo-500 px-5 py-3 text-sm font-semibold text-white hover:bg-indigo-400">Open Workspace</a>
+        <a href="#features" class="rounded-xl border border-slate-700 px-5 py-3 text-sm font-semibold text-slate-200 hover:text-white">Explore Features</a>
       </div>
-      <div class="av-section-body space-y-3 text-slate-300">
-        <p>Dictionary+ focuses on one part of your learning flow and keeps it clear.</p>
-      </div>
-    </AvContainer>
-  </section>
+    </section>
 
-  <!-- Why this mini app -->
-  <section class="av-section">
-    <AvContainer size="narrow">
-      <div class="av-section-header">
-        <h2 class="av-section-title">Why Dictionary+ feels different</h2>
-        <p class="av-section-lead">
-          A focused mini app inside the larger Ansiversa ecosystem.
-        </p>
-      </div>
-      <div class="av-section-body">
-        <ul class="space-y-2 text-slate-300 list-disc list-inside">
-          <li>Designed specifically for learners, students, and educators.</li>
-          <li>Removes distractions so you can focus on actual understanding.</li>
-          <li>Built on the fast, unified Ansiversa ecosystem.</li>
-        </ul>
-      </div>
-    </AvContainer>
-  </section>
-
-  <!-- How it works -->
-  <section class="av-section">
-    <AvContainer size="narrow">
-      <div class="av-section-header">
-        <h2 class="av-section-title">How it works</h2>
-        <p class="av-section-lead">
-          Simple, clear steps so people can start in under a minute.
-        </p>
-      </div>
-      <ol class="av-section-body space-y-2 text-slate-300 list-decimal list-inside">
-        <li>Open Dictionary+ in your browser.</li>
-        <li>Add the topic, content, or material you want to work with.</li>
-        <li>Use the focused tools to learn, revise, or practice within minutes.</li>
-      </ol>
-    </AvContainer>
-  </section>
-
-  <!-- Final CTA -->
-  <section class="av-section">
-    <AvContainer size="narrow">
-      <div class="av-section-header">
-        <h2 class="av-section-title">Ready to try Dictionary+?</h2>
-        <p class="av-section-lead">
-          Open the app, follow the simple flow, and let it handle the heavy lifting.
-        </p>
-      </div>
-      <div class="av-cta-row">
-        <AvButton href="https://dictionary-plus.ansiversa.com">Start with Dictionary+</AvButton>
-      </div>
-    </AvContainer>
-  </section>
+    <section id="features" class="mt-10 grid gap-4 sm:grid-cols-2">
+      {[
+        ["Structured word capture", "Save term, phonetic spelling, part of speech, definitions, and context in one place."],
+        ["Focused organization", "Use categories and favorites to surface the words you revisit most."],
+        ["Archive with confidence", "Move inactive terms out of the way without deleting your history."],
+        ["Ansiversa connected", "Dashboard summary and key milestones sync into the parent experience."],
+      ].map(([title, body]) => (
+        <article class="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+          <h2 class="text-lg font-medium text-white">{title}</h2>
+          <p class="mt-2 text-sm leading-6 text-slate-300">{body}</p>
+        </article>
+      ))}
+    </section>
+  </main>
 </AppShell>
