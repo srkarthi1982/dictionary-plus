@@ -15,8 +15,28 @@ type Entry = {
   updatedAt: string | Date;
 };
 
+type DictionaryPlusStore = {
+  entries: Entry[];
+  search: string;
+  activeTab: string;
+  categoryFilter: string;
+  selectedEntryId: number | null;
+  isEditorOpen: boolean;
+  isSubmitting: boolean;
+  flash: { type: string; message: string };
+  init(entries: Entry[]): void;
+  setTab(tab: string): void;
+  setSearch(value: string): void;
+  setCategory(value: string): void;
+  openEditor(entryId?: number): void;
+  closeEditor(): void;
+  setFlash(type: "success" | "error", message: string): void;
+  readonly categories: string[];
+  readonly filteredEntries: Entry[];
+};
+
 export function registerDictionaryPlusStore(Alpine: Alpine) {
-  Alpine.store("dictionaryPlus", {
+  const store: DictionaryPlusStore = {
     entries: [] as Entry[],
     search: "",
     activeTab: "overview",
@@ -60,13 +80,13 @@ export function registerDictionaryPlusStore(Alpine: Alpine) {
     },
 
     get categories() {
-      return [...new Set(this.entries.map((entry) => entry.category).filter(Boolean))];
+      return [...new Set(this.entries.map((entry: Entry) => entry.category).filter(Boolean) as string[])];
     },
 
     get filteredEntries() {
       const query = this.search.toLowerCase();
 
-      return this.entries.filter((entry) => {
+      return this.entries.filter((entry: Entry) => {
         const matchesTab =
           this.activeTab === "favorites"
             ? entry.isFavorite && entry.status === "active"
@@ -89,5 +109,7 @@ export function registerDictionaryPlusStore(Alpine: Alpine) {
         return matchesTab && matchesCategory && matchesSearch;
       });
     },
-  });
+  };
+
+  Alpine.store("dictionaryPlus", store);
 }

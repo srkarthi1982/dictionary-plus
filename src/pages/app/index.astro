@@ -6,8 +6,17 @@ import { server, listDictionaryEntries } from "../../actions";
 const user = Astro.locals.user;
 if (!user) return Astro.redirect("/");
 
+const PARTS_OF_SPEECH = ["noun", "verb", "adjective", "adverb", "phrase", "other"] as const;
+type PartOfSpeech = (typeof PARTS_OF_SPEECH)[number];
+
+function asPartOfSpeech(value: FormDataEntryValue | null): PartOfSpeech | undefined {
+  const candidate = String(value ?? "").trim();
+  return PARTS_OF_SPEECH.includes(candidate as PartOfSpeech) ? (candidate as PartOfSpeech) : undefined;
+}
+
 const formData = Astro.request.method === "POST" ? await Astro.request.formData() : null;
-let flash: { type: "success" | "error"; message: string } | null = null;
+let flashType: "success" | "error" | null = null;
+let flashMessage = "";
 
 async function runIntent() {
   if (!formData) return;
@@ -18,13 +27,14 @@ async function runIntent() {
       await Astro.callAction(server.createDictionaryEntry, {
         term: String(formData.get("term") ?? ""),
         phonetic: String(formData.get("phonetic") ?? "") || undefined,
-        partOfSpeech: String(formData.get("partOfSpeech") ?? "") || undefined,
+        partOfSpeech: asPartOfSpeech(formData.get("partOfSpeech")),
         definition: String(formData.get("definition") ?? ""),
         exampleText: String(formData.get("exampleText") ?? "") || undefined,
         category: String(formData.get("category") ?? "") || undefined,
         notes: String(formData.get("notes") ?? "") || undefined,
       });
-      flash = { type: "success", message: "Entry created." };
+      flashType = "success";
+      flashMessage = "Entry created.";
     }
 
     if (intent === "update") {
@@ -32,40 +42,42 @@ async function runIntent() {
         id: Number(formData.get("id")),
         term: String(formData.get("term") ?? ""),
         phonetic: String(formData.get("phonetic") ?? "") || undefined,
-        partOfSpeech: String(formData.get("partOfSpeech") ?? "") || undefined,
+        partOfSpeech: asPartOfSpeech(formData.get("partOfSpeech")),
         definition: String(formData.get("definition") ?? ""),
         exampleText: String(formData.get("exampleText") ?? "") || undefined,
         category: String(formData.get("category") ?? "") || undefined,
         notes: String(formData.get("notes") ?? "") || undefined,
       });
-      flash = { type: "success", message: "Entry updated." };
+      flashType = "success";
+      flashMessage = "Entry updated.";
     }
 
     if (intent === "favorite") {
       await Astro.callAction(server.toggleDictionaryEntryFavorite, {
         id: Number(formData.get("id")),
       });
-      flash = { type: "success", message: "Favorite updated." };
+      flashType = "success";
+      flashMessage = "Favorite updated.";
     }
 
     if (intent === "archive") {
       await Astro.callAction(server.archiveDictionaryEntry, {
         id: Number(formData.get("id")),
       });
-      flash = { type: "success", message: "Entry archived." };
+      flashType = "success";
+      flashMessage = "Entry archived.";
     }
 
     if (intent === "restore") {
       await Astro.callAction(server.restoreDictionaryEntry, {
         id: Number(formData.get("id")),
       });
-      flash = { type: "success", message: "Entry restored." };
+      flashType = "success";
+      flashMessage = "Entry restored.";
     }
   } catch (error) {
-    flash = {
-      type: "error",
-      message: error instanceof Error ? error.message : "Unable to complete request.",
-    };
+    flashType = "error";
+    flashMessage = error instanceof Error ? error.message : "Unable to complete request.";
   }
 }
 
@@ -93,9 +105,9 @@ const categories = [...new Set(entries.map((entry) => entry.category?.trim()).fi
       <article class="rounded-2xl border border-slate-800 bg-slate-900 p-4"><p class="text-xs text-slate-400">Categories</p><p class="mt-2 text-2xl font-semibold text-white">{categories.length}</p></article>
     </section>
 
-    {flash && (
-      <p class={`mt-5 rounded-xl border px-4 py-3 text-sm ${flash.type === "success" ? "border-emerald-800 bg-emerald-950 text-emerald-200" : "border-rose-800 bg-rose-950 text-rose-200"}`}>
-        {flash.message}
+    {flashType !== null && (
+      <p class={`mt-5 rounded-xl border px-4 py-3 text-sm ${flashType === "success" ? "border-emerald-800 bg-emerald-950 text-emerald-200" : "border-rose-800 bg-rose-950 text-rose-200"}`}>
+        {flashMessage}
       </p>
     )}
 
