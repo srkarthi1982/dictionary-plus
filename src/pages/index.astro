@@ -1,39 +1,157 @@
 ---
 import AppShell from "../layouts/AppShell.astro";
-import AvMiniAppBar from "../components/AvMiniAppBar.astro";
+import LandingPageStandard from "../components/landing/LandingPageStandard.astro";
+import type { LandingPageContent } from "../lib/landing";
 
-const title = "Dictionary+ | Personal Dictionary Workspace";
-const description = "Build and organize your personal dictionary with premium clarity inside Ansiversa.";
+const title = "Dictionary+ | Ansiversa";
+const description = "Maintain a personal dictionary of terms, definitions, notes, and favorites.";
+const rootAppUrl = Astro.locals.rootAppUrl ?? "https://ansiversa.com";
+const appUrl = new URL("/app", Astro.url).toString();
+const signInUrl = new URL("/login", rootAppUrl);
+signInUrl.searchParams.set("returnTo", appUrl);
+const startHref = Astro.locals.isAuthenticated ? "/app" : signInUrl.toString();
+
+const landingContent: LandingPageContent = {
+  categoryLabel: "Reference Workspace",
+  appLabel: "Authenticated DB-backed workspace",
+  title: "Keep your terms and definitions in a dictionary that is actually yours.",
+  subtitle:
+    "Create personal dictionary entries, search and filter them, mark favorites, archive older terms, and open full detail views in a private reference workspace.",
+  heroBullets: [
+    "Save terms, definitions, notes, and examples in one personal record",
+    "Use favorites and filters to keep the most useful entries easy to surface",
+    "Archive and restore terms without losing your stored reference history",
+  ],
+  primaryCta: {
+    label: Astro.locals.isAuthenticated ? "Open Workspace" : "Sign in to Open",
+    href: startHref,
+  },
+  secondaryCta: {
+    label: "See Workflow",
+    href: "#workflow",
+    variant: "ghost",
+  },
+  heroNote:
+    "Current V1 is a private dictionary workspace. It is not an external dictionary API product and it does not generate definitions with AI.",
+  heroPanel: {
+    eyebrow: "Reference flow",
+    title: "Create → Organize → Revisit",
+    steps: [
+      "1. Save the term and definition in your protected workspace",
+      "2. Search, filter, and favorite the entries you return to most",
+      "3. Archive older terms without deleting the reference history",
+    ],
+    meta: [
+      { value: "DB", label: "Persistence" },
+      { value: "Per-user", label: "Ownership" },
+    ],
+  },
+  features: {
+    title: "What Dictionary+ gives you in V1",
+    lead:
+      "The product is built for personal reference records with search and state control, not for live public dictionary lookups.",
+    items: [
+      {
+        title: "Structured dictionary entries",
+        description:
+          "Keep the term, definition, notes, and examples together in a dedicated record instead of across scattered study tools.",
+      },
+      {
+        title: "Favorite-first reference review",
+        description:
+          "Mark important entries so the terms you actually revisit stay easy to find.",
+      },
+      {
+        title: "Search and filter clarity",
+        description:
+          "Use workspace search and filters over your own saved entries instead of depending on external lookup behavior.",
+      },
+      {
+        title: "Archive-safe library",
+        description:
+          "Move inactive terms out of the active set while keeping the private dictionary intact.",
+      },
+    ],
+  },
+  pillars: {
+    title: "Why this works better than throwing definitions into notes",
+    lead:
+      "The product stays narrow on purpose: one protected reference workspace, one entry model, and one consistent place to keep your personal dictionary usable over time.",
+    items: [
+      {
+        title: "Truthful product boundary",
+        description:
+          "This is a personal dictionary and reference library, not a public lookup service and not an AI definition engine.",
+      },
+      {
+        title: "Reference-first structure",
+        description:
+          "The app is organized around saved entries, which keeps the reading and recall experience cleaner than generic note pages.",
+      },
+      {
+        title: "Owner-scoped search and favorites",
+        description:
+          "Search, filters, favorites, and archive state all operate over the user’s own saved dictionary entries.",
+      },
+      {
+        title: "Protected personal access",
+        description:
+          "Protected routes and safe detail handling keep the dictionary private and dependable for one user at a time.",
+      },
+    ],
+  },
+  workflow: {
+    eyebrow: "How it works",
+    title: "Move from term capture to reliable personal reference",
+    lead:
+      "The workflow is designed for building a dictionary you can search, revisit, and refine without extra overhead.",
+    steps: [
+      {
+        title: "Create the entry",
+        description:
+          "Start in the protected workspace and save the term record you want to keep in your own dictionary.",
+      },
+      {
+        title: "Organize the library",
+        description:
+          "Use search, filters, favorites, and archive controls to keep the active entry set aligned with what you need now.",
+      },
+      {
+        title: "Open details when the entry needs full review",
+        description:
+          "Use the detail route to inspect the full record safely, then return to the workspace when the entry is in good shape.",
+      },
+    ],
+  },
+  showcase: {
+    eyebrow: "Current product shape",
+    title: "Built for personal dictionary review, not external lookup",
+    description:
+      "The landing copy stays aligned to the verified implementation: Dictionary+ helps one authenticated user maintain a DB-backed term library with search, favorites, archive, and safe detail review.",
+    bullets: [
+      "Good fit for learners or professionals building a reusable private term library",
+      "Centered on manual entry creation, search/filter, favorites, archive/restore, and detail review",
+    ],
+    calloutLabel: "Freeze truth",
+    calloutValue: "Personal dictionary only",
+  },
+  finalCta: {
+    title: "Start building a dictionary you can actually use again",
+    description:
+      "Open the workspace, save the terms properly, and keep the definitions that matter easy to find later.",
+    primaryCta: {
+      label: Astro.locals.isAuthenticated ? "Open Workspace" : "Sign in to Open",
+      href: startHref,
+    },
+    secondaryCta: {
+      label: "Review Features",
+      href: "#features",
+      variant: "ghost",
+    },
+  },
+};
 ---
 
 <AppShell title={title} description={description}>
-  <AvMiniAppBar appName="Dictionary+" appKey="dictionary-plus" />
-
-  <main class="mx-auto max-w-5xl px-4 py-14 sm:px-6 lg:px-8">
-    <section class="rounded-3xl border border-slate-800 bg-gradient-to-b from-slate-900 to-slate-950 p-8 sm:p-12">
-      <p class="text-sm uppercase tracking-[0.16em] text-indigo-300">Ansiversa Mini App</p>
-      <h1 class="mt-4 text-4xl font-semibold tracking-tight text-white sm:text-5xl">Your private dictionary, designed for deep learning.</h1>
-      <p class="mt-5 max-w-3xl text-lg leading-relaxed text-slate-300">
-        Dictionary+ helps you capture terms, definitions, examples, and notes in one polished workspace. Organize by category, mark favorites, and archive entries while keeping your study history intact.
-      </p>
-      <div class="mt-8 flex flex-wrap gap-3">
-        <a href="/app" class="rounded-xl bg-indigo-500 px-5 py-3 text-sm font-semibold text-white hover:bg-indigo-400">Open Workspace</a>
-        <a href="#features" class="rounded-xl border border-slate-700 px-5 py-3 text-sm font-semibold text-slate-200 hover:text-white">Explore Features</a>
-      </div>
-    </section>
-
-    <section id="features" class="mt-10 grid gap-4 sm:grid-cols-2">
-      {[
-        ["Structured word capture", "Save term, phonetic spelling, part of speech, definitions, and context in one place."],
-        ["Focused organization", "Use categories and favorites to surface the words you revisit most."],
-        ["Archive with confidence", "Move inactive terms out of the way without deleting your history."],
-        ["Ansiversa connected", "Dashboard summary and key milestones sync into the parent experience."],
-      ].map(([title, body]) => (
-        <article class="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
-          <h2 class="text-lg font-medium text-white">{title}</h2>
-          <p class="mt-2 text-sm leading-6 text-slate-300">{body}</p>
-        </article>
-      ))}
-    </section>
-  </main>
+  <LandingPageStandard content={landingContent} />
 </AppShell>
